@@ -13,12 +13,17 @@ COUNTDOWN = 3
 DELAY = 2
 
 
-def take_pictures(sensor_id: int, photos_count: int) -> None:
-    photos_folder_path = "images"
+def take_pictures(
+    sensor_id: int,
+    frame_width: int,
+    frame_height: int,
+    photos_count: int,
+    photos_folder_path: str,
+) -> None:
     if not os.path.isdir(photos_folder_path):
         os.makedirs(photos_folder_path)
 
-    camera = StereoCamera(sensor_id)
+    camera = StereoCamera(sensor_id, frame_width, frame_height)
     camera.start()
 
     time.sleep(COUNTDOWN)
@@ -26,10 +31,19 @@ def take_pictures(sensor_id: int, photos_count: int) -> None:
     for photo in tqdm(range(photos_count), bar_format="[+] Photos: |{bar:50}|"):
         time.sleep(DELAY)
 
-        grabbed, frame = camera.read()
+        capture = camera.read()
+        grabbed = capture.grabbed
+        frame = capture.frame
+
         if grabbed:
-            cv2.imwrite(f"{photos_folder_path}/left_image_{photo}.png", frame[:, :640])
-            cv2.imwrite(f"{photos_folder_path}/right_image_{photo}.png", frame[:, 640:])
+            left_frame_path = f"{photos_folder_path}/left_image_{photo:02d}.png"
+            right_frame_path = f"{photos_folder_path}/right_image_{photo:02d}.png"
+
+            left_frame = frame[:, : frame_width // 2]
+            right_frame = frame[:, frame_width // 2 :]
+
+            cv2.imwrite(left_frame_path, left_frame)
+            cv2.imwrite(right_frame_path, right_frame)
 
             cv2.imshow("[+] Camera image:", frame)
 
@@ -47,5 +61,17 @@ if __name__ == "__main__":
     if input("[>] Do you want to start taking photos? (y/n) ").lower() == "y":
         sensor_id = int(input("[>] Enter sensor ID: "))
         photos_count = int(input("[>] Enter photos count: "))
+        photos_folder_path = str(input("[>] Enter photos folder path: "))
 
-        take_pictures(sensor_id, photos_count)
+        # frame_width = int(input("[>] Enter frame width: "))
+        # frame_height = int(input("[>] Enter frame height: "))
+        frame_width = 1280
+        frame_height = 480
+
+        take_pictures(
+            sensor_id,
+            frame_width,
+            frame_height,
+            photos_count,
+            photos_folder_path,
+        )

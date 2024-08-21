@@ -2,7 +2,6 @@
 
 import os
 import threading
-from typing import Tuple
 
 import cv2
 import numpy as np
@@ -15,12 +14,14 @@ class Capture:
 
 
 class StereoCamera:
-    def __init__(self, sensor_id: int) -> None:
+    def __init__(self, sensor_id: int, frame_width: int, frame_height: int) -> None:
         self.sensor_id: int = sensor_id
+        self.frame_width: int = frame_width
+        self.frame_height: int = frame_height
 
         self.video_capture: cv2.VideoCapture = cv2.VideoCapture(self.sensor_id)
-        self.video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        self.video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
+        self.video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
 
         grabbed, frame = self.video_capture.read()
         self.capture = Capture(grabbed, frame)
@@ -37,14 +38,14 @@ class StereoCamera:
 
         if self.video_capture:
             self.running = True
-            self.read_thread = threading.Thread(target=self.update_camera, daemon=True)
+            self.read_thread = threading.Thread(target=self._update_camera, daemon=True)
             self.read_thread.start()
 
     def stop(self) -> None:
         self.running = False
         self.read_thread.join()
 
-    def update_camera(self) -> None:
+    def _update_camera(self) -> None:
         while self.running:
             try:
                 grabbed, frame = self.video_capture.read()
@@ -54,11 +55,11 @@ class StereoCamera:
             except RuntimeError:
                 print("[-] Could not read image from camera!")
 
-    def read(self) -> Tuple[bool, np.ndarray]:
+    def read(self) -> Capture:
         with self.read_lock:
             grabbed = self.capture.grabbed
             frame = self.capture.frame.copy()
-        return grabbed, frame
+        return Capture(grabbed, frame)
 
     def release(self) -> None:
         if self.video_capture:
@@ -73,16 +74,25 @@ if __name__ == "__main__":
 
     sensor_id = int(input("[>] Enter sensor ID: "))
 
-    s = StereoCamera(sensor_id)
-    s.start()
+    # frame_width = int(input("[>] Enter frame width: "))
+    # frame_height = int(input("[>] Enter frame height: "))
+    frame_width = 1280
+    frame_height = 480
+
+    camera = StereoCamera(sensor_id, frame_width, frame_height)
+    camera.start()
 
     while True:
-        grabbed, frame = s.read()
+        capture = camera.read()
+        grabbed = capture.grabbed
+        frame = capture.frame
 
-        cv2.imshow("[+] Camera image:", frame)
+        if grabbed:
+            cv2.imshow("[+] Camera image:", frame)
+
         if cv2.waitKey(1) == ord("q"):
             break
 
-    s.stop()
-    s.release()
+    camera.stop()
+    camera.release()
     cv2.destroyAllWindows()
