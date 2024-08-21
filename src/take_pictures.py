@@ -9,7 +9,7 @@ from tqdm import tqdm
 from camera import StereoCamera
 
 
-COUNTDOWN = 3
+COUNTDOWN = 4
 DELAY = 2
 
 
@@ -59,12 +59,15 @@ if __name__ == "__main__":
     os.environ["QT_LOGGING_RULES"] = "*.debug=false;qt.qpa.*=false"
 
     if input("[>] Do you want to start taking photos? (y/n) ").lower() == "y":
-        sensor_id = int(input("[>] Enter sensor ID: "))
-        photos_count = int(input("[>] Enter photos count: "))
-        photos_folder_path = str(input("[>] Enter photos folder path: "))
-
+        # sensor_id = int(input("[>] Enter sensor ID: "))
+        # photos_count = int(input("[>] Enter photos count: "))
+        # photos_folder_path = str(input("[>] Enter photos folder path: "))
         # frame_width = int(input("[>] Enter frame width: "))
         # frame_height = int(input("[>] Enter frame height: "))
+
+        sensor_id = 0
+        photos_count = 30
+        photos_folder_path = "images"
         frame_width = 1280
         frame_height = 480
 
