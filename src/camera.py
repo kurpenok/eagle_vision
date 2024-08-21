@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import threading
 from typing import Tuple
 
@@ -68,6 +69,8 @@ class StereoCamera:
 
 
 if __name__ == "__main__":
+    os.environ["QT_LOGGING_RULES"] = "*.debug=false;qt.qpa.*=false"
+
     sensor_id = int(input("[>] Enter sensor ID: "))
 
     s = StereoCamera(sensor_id)
