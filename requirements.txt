@@ -1,4 +1,4 @@
-tqdm==4.66.5
 numpy==2.1.0
 opencv-python==4.10.0.84
 StereoVision==1.0.4
+tqdm==4.66.5
